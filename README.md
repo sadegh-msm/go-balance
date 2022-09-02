@@ -1,6 +1,6 @@
 # GO-balancer
 
-`balancer` is a layer 7 load balancer that supports http and https, and it is also a go library that implements `load balancing` algorithms.
+`GO-balancer` is a layer 7 load balancer that supports http and https, and it is also a go library that implements `load balancing` algorithms.
 
 It currently supports load balancing algorithms:
 * `round-robin`
