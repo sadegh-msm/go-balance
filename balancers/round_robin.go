@@ -55,7 +55,7 @@ func (r *RoundRobin) Done(host string) {
 	// no need to implement
 }
 
-func initBalancer() {
+func init() {
 	Factories[RRBalancer] = NewRoundRobin
 }
 

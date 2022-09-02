@@ -17,6 +17,11 @@ var (
 	AlgorithmNotSupportedError = errors.New("algorithm not supported")
 )
 
+type Host struct {
+	name string
+	load uint64
+}
+
 // Factory is the factory that generates Balancer,
 // and the factory design pattern is used here
 type Factory func([]string) Balancer
