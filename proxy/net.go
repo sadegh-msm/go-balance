@@ -48,11 +48,13 @@ func IsBackendAlive(host string) bool {
 	if err != nil {
 		return false
 	}
+
 	resolveAddr := fmt.Sprintf("%s:%d", addr.IP, addr.Port)
 	conn, err := net.DialTimeout("tcp", resolveAddr, ConnectionTimeout)
 	if err != nil {
 		return false
 	}
-	_ = conn.Close()
+	conn.Close()
+
 	return true
 }

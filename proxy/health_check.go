@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-// ReadAlive reads the alive status of the site
+// ReadAlive reads the alive status of the host
 func (h *HTTPProxy) ReadAlive(url string) bool {
 	h.RLock()
 	defer h.RUnlock()
 	return h.alive[url]
 }
 
-// SetAlive sets the alive status to the site
+// SetAlive sets the alive status to the host
 func (h *HTTPProxy) SetAlive(url string, alive bool) {
 	h.Lock()
 	defer h.Unlock()
@@ -28,14 +28,15 @@ func (h *HTTPProxy) HealthCheck(interval uint) {
 
 func (h *HTTPProxy) healthCheck(host string, interval uint) {
 	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+
 	for range ticker.C {
 		if !IsBackendAlive(host) && h.ReadAlive(host) {
-			log.Printf("Site unreachable, remove %s from load balancer.", host)
+			log.Printf("Host is unreachable, remove %s from load balancer.", host)
 
 			h.SetAlive(host, false)
 			h.lb.Remove(host)
 		} else if IsBackendAlive(host) && !h.ReadAlive(host) {
-			log.Printf("Site reachable, add %s to load balancer.", host)
+			log.Printf("Host is reachable, add %s to load balancer.", host)
 
 			h.SetAlive(host, true)
 			h.lb.Add(host)
