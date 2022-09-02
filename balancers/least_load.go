@@ -1,7 +1,7 @@
 package balancers
 
 import (
-	fibHeap "github.com/starwander/GoFibonacciHeap"
+	fibHeap "go-balancer/helpers"
 	"sync"
 )
 
@@ -29,7 +29,9 @@ func (h *Host) Key() float64 {
 
 // NewLeastLoad create new LeastLoad balancer
 func NewLeastLoad(hosts []string) Balancer {
-	ll := &LeastLoad{heap: fibHeap.NewFibHeap()}
+	ll := &LeastLoad{
+		heap: fibHeap.NewFibHeap(),
+	}
 	for _, h := range hosts {
 		ll.Add(h)
 	}
@@ -43,7 +45,10 @@ func (l *LeastLoad) Add(hostName string) {
 	if ok := l.heap.GetValue(hostName); ok != nil {
 		return
 	}
-	_ = l.heap.InsertValue(&Host{hostName, 0})
+	_ = l.heap.InsertValue(&Host{
+		hostName,
+		0,
+	})
 }
 
 // Remove new host from the balancer

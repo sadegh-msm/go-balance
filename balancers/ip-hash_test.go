@@ -2,10 +2,11 @@ package balancers
 
 import (
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
-func TestRoundRobin_Add(t *testing.T) {
+func TestNewIPHash_Add(t *testing.T) {
 	cases := []struct {
 		name   string
 		lb     Balancer
@@ -14,47 +15,45 @@ func TestRoundRobin_Add(t *testing.T) {
 	}{
 		{
 			"test-1",
-			NewRoundRobin([]string{
+			NewIPHash([]string{
 				"http://127.0.0.1:8011",
 				"http://127.0.0.1:8012",
 				"http://127.0.0.1:8013",
 			}),
-			"http://127.0.0.1:8013",
-			&RoundRobin{
+			"http://127.0.0.1:8012",
+			&IPHash{
 				hosts: []string{
 					"http://127.0.0.1:8011",
 					"http://127.0.0.1:8012",
 					"http://127.0.0.1:8013",
 				},
-				num: 0,
 			},
 		},
 		{
 			"test-2",
-			NewRoundRobin(
-				[]string{
-					"http://127.0.0.1:8011",
-					"http://127.0.0.1:8012",
-				}),
-			"http://127.0.0.1:8012",
-			&RoundRobin{
+			NewIPHash([]string{
+				"http://127.0.0.1:8011",
+				"http://127.0.0.1:8012",
+			}),
+			"http://127.0.0.1:8013",
+			&IPHash{
 				hosts: []string{
 					"http://127.0.0.1:8011",
 					"http://127.0.0.1:8012",
+					"http://127.0.0.1:8013",
 				},
-				num: 0,
 			},
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			c.lb.Add(c.args)
-			assert.Equal(t, c.expect, c.lb)
+			assert.Equal(t, true, reflect.DeepEqual(c.expect, c.lb))
 		})
 	}
 }
 
-func TestRoundRobin_Remove(t *testing.T) {
+func TestIPHash_Remove(t *testing.T) {
 	cases := []struct {
 		name   string
 		lb     Balancer
@@ -63,30 +62,30 @@ func TestRoundRobin_Remove(t *testing.T) {
 	}{
 		{
 			"test-1",
-			NewRoundRobin(
-				[]string{
-					"http://127.0.0.1:8011",
-					"http://127.0.0.1:8012",
-				}),
-			"http://127.0.0.1:8013",
-			&RoundRobin{
+			NewIPHash([]string{
+				"http://127.0.0.1:8011",
+				"http://127.0.0.1:8012",
+				"http://127.0.0.1:8013",
+			}),
+			"http://127.0.0.1:8012",
+			&IPHash{
 				hosts: []string{
 					"http://127.0.0.1:8011",
-					"http://127.0.0.1:8012",
+					"http://127.0.0.1:8013",
 				},
 			},
 		},
 		{
 			"test-2",
-			NewRoundRobin(
-				[]string{
-					"http://127.0.0.1:8011",
-					"http://127.0.0.1:8012",
-				}),
-			"http://127.0.0.1:8012",
-			&RoundRobin{
+			NewIPHash([]string{
+				"http://127.0.0.1:8011",
+				"http://127.0.0.1:8012",
+			}),
+			"http://127.0.0.1:8013",
+			&IPHash{
 				hosts: []string{
 					"http://127.0.0.1:8011",
+					"http://127.0.0.1:8012",
 				},
 			},
 		},
@@ -94,29 +93,30 @@ func TestRoundRobin_Remove(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			c.lb.Remove(c.args)
-			assert.Equal(t, c.expect, c.lb)
+			assert.Equal(t, true, reflect.DeepEqual(c.expect, c.lb))
 		})
 	}
 }
 
-func TestRoundRobin_Balance(t *testing.T) {
+func TestIPHash_Balance(t *testing.T) {
 	type expect struct {
 		reply string
 		err   error
 	}
+
 	cases := []struct {
 		name   string
 		lb     Balancer
-		args   string
+		key    string
 		expect expect
 	}{
-		{
-			"test-1",
-			NewRoundRobin(
-				[]string{
-					"http://127.0.0.1:8011",
-				}),
-			"",
+		{"test-1",
+			NewIPHash([]string{
+				"http://127.0.0.1:8011",
+				"http://127.0.0.1:8012",
+				"http://127.0.0.1:8013",
+			}),
+			"192.168.1.1",
 			expect{
 				"http://127.0.0.1:8011",
 				nil,
@@ -124,9 +124,8 @@ func TestRoundRobin_Balance(t *testing.T) {
 		},
 		{
 			"test-2",
-			NewRoundRobin(
-				[]string{}),
-			"",
+			NewIPHash([]string{}),
+			"192.168.1.1",
 			expect{
 				"",
 				NoHostError,
@@ -135,9 +134,9 @@ func TestRoundRobin_Balance(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			reply, err := c.lb.Balance(c.args)
-			assert.Equal(t, c.expect.reply, reply)
-			assert.Equal(t, c.expect.err, err)
+			value, err := c.lb.Balance(c.key)
+			assert.Equal(t, true, reflect.DeepEqual(c.expect.reply, value))
+			assert.Equal(t, true, reflect.DeepEqual(c.expect.err, err))
 		})
 	}
 }
